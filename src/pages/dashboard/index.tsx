@@ -102,8 +102,8 @@ function Dashboard() {
     seriesSource.forEach((item: any) => {
       xaxis.push(item.date);
       if (new Date(item.date) > new Date()) {
-        series1.push(Math.floor(item.value * 0.95));
-        series2.push(Math.floor(item.value * 1.05));
+        series1.push(Math.floor(item.value * 1.05));
+        series2.push(Math.floor(item.value * 0.95));
       }
       else {
         series1.push(item.value);
@@ -111,8 +111,26 @@ function Dashboard() {
       }
     })
 
+    //set chart options
     setChartOptions({
-      colors: ['green', '#CED4DC'],
+      fill: {
+        type: "solid",
+        colors: ['lightblue', '#3d3d66'],
+        opacity: 1,
+      },
+      grid: {
+        show: false,      // you can either change hear to disable all grids
+        xaxis: {
+          lines: {
+            show: true  //or just here to disable only x axis grids
+          }
+        },
+        yaxis: {
+          lines: {
+            show: true  //or just here to disable only y axis
+          }
+        },
+      },
       xaxis: {
         categories: xaxis,
         labels: {
@@ -127,6 +145,9 @@ function Dashboard() {
             colors: "white"
           }
         }
+      },
+      tooltip: {
+        enabled: false,
       }
     })
     setSeries([
@@ -201,7 +222,7 @@ function Dashboard() {
       />
 
       {/* randomize button */}
-      <div className="flex justify-center mt-2">
+      <div className="flex justify-center mt-2 mb-8">
         <button
           className=" hover:bg-blue-500 text-white font-semibold focus:outline-none hover:text-white py-2 px-4 border border-white hover:border-transparent rounded"
           onClick={(e: any) => generateProductData(startDate, endDate)}
