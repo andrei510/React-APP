@@ -29,12 +29,13 @@ const customStyles = {
 function Dashboard() {
   const [startDate, setStartDate] = useState(moment(new Date(new Date().setDate(new Date().getDate() - 3))).format('YYYY-MM-DD'));
   const [endDate, setEndDate] = useState(moment(new Date(new Date().setDate(new Date().getDate() + 3))).format('YYYY-MM-DD'));
-  const [product1Data, setProduct1Data] = useState([] as any);
-  const [product2Data, setProduct2Data] = useState([] as any);
-  const [tableData, setTableData] = useState([] as any);
+  const [product1Data, setProduct1Data] = useState([] as object[]);
+  const [product2Data, setProduct2Data] = useState([] as object[]);
+  const [tableData, setTableData] = useState([] as object[]);
   const [productSelector, setProductSelector] = useState("all");
-  const [chartOptions, setChartOptions] = useState({} as any);
-  const [series, setSeries] = useState([] as any);
+  const [chartOptions, setChartOptions] = useState({} as object);
+  const [series, setSeries] = useState([] as object[]);
+  const [randomVal, setRandomVal] = useState(0.5);
 
   //table columns
   const columns = [
@@ -54,40 +55,43 @@ function Dashboard() {
 
   //init
   useEffect(() => {
+    generateRandomValue();
     generateProductData(startDate, endDate);
   }, []);// eslint-disable-line react-hooks/exhaustive-deps
 
-  //Generate random products data
-  const generateProductData = (sDate: any, eDate: any) => {
-    let tmp1 = [], tmp2 = [];
+  //generate random value
+  const generateRandomValue = () => {
+    setRandomVal(Math.random());
+  }
 
-    var date: any = new Date(sDate);
+  //Generate random products data
+  const generateProductData = (sDate: string, eDate: string) => {
+    let tmp1 = [], tmp2 = [];
+    var date = new Date(sDate);
+
     for (; date <= new Date(eDate); date.setDate(new Date(date).getDate() + 1)) {
-      let random = Math.floor(Math.random() * 50) + 20;
+      let random = Math.floor((date.getMonth() * date.getDate() * date.getMonth() * date.getDate()) % 39 * randomVal) + 25;
       tmp1.push({ date: moment(date).format('YYYY-MM-DD'), product: 1, value: random });
-      random = Math.floor(Math.random() * 50) + 20;
+      random = Math.floor((date.getMonth() * date.getDate() * date.getMonth() * date.getDate()) % 29 * randomVal) + 30;
       tmp2.push({ date: moment(date).format('YYYY-MM-DD'), product: 2, value: random });
     }
-
     setProduct1Data(tmp1);
     setProduct2Data(tmp2);
     setDisplayData(productSelector, tmp1, tmp2);
   }
 
   //set display data
-  const setDisplayData = (selector: any, data1: any, data2: any) => {
+  const setDisplayData = (selector: string, data1: any[], data2: any[]) => {
     //xaxis values for chart
-    let xaxis: any = [];
+    let xaxis: any[] = [];
     //series for chart
-    let series1: any = [];
-    let series2: any = [];
+    let series1: any[] = [];
+    let series2: any[] = [];
     let seriesSource = [];
-
     if (selector === "all") {
       setTableData([...data1, ...data2]);
-      data1.forEach((item: any, index: any) => {
-        item.value = item.value + data2[index].value;
-        seriesSource.push(item);
+      data1.forEach((item, index) => {
+        seriesSource.push({ date: item.date, value: item.value + data2[index].value });
       })
     }
     else if (selector === "p1") {
@@ -98,7 +102,6 @@ function Dashboard() {
       setTableData(data2);
       seriesSource = data2;
     }
-
     seriesSource.forEach((item: any) => {
       xaxis.push(item.date);
       if (new Date(item.date) > new Date()) {
@@ -169,14 +172,14 @@ function Dashboard() {
       <div className="flex justify-center">
         <input
           value={startDate}
-          onChange={(e: any) => { setStartDate(e.target.value); generateProductData(e.target.value, endDate) }}
+          onChange={(e) => { setStartDate(e.target.value); generateProductData(e.target.value, endDate) }}
           type="date"
           placeholder="StartDate"
           max={moment(new Date()).format('YYYY-MM-DD')}
           className="block ml-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none focus:ring my-2" />
         <input
           value={endDate}
-          onChange={(e: any) => { setEndDate(e.target.value); generateProductData(startDate, e.target.value) }}
+          onChange={(e) => { setEndDate(e.target.value); generateProductData(startDate, e.target.value) }}
           type="date"
           placeholder="EndDate"
           min={startDate < moment(new Date()).format('YYYY-MM-DD') ? moment(new Date()).format('YYYY-MM-DD') : startDate}
@@ -199,7 +202,7 @@ function Dashboard() {
           <select
             className="w-full h-10 pl-3 pr-6 text-base placeholder-gray-600 border rounded-lg appearance-none focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none focus:ring"
             value={productSelector}
-            onChange={(e: any) => {
+            onChange={(e) => {
               setProductSelector(e.target.value);
               setDisplayData(e.target.value, product1Data, product2Data);
             }}>
@@ -225,7 +228,7 @@ function Dashboard() {
       <div className="flex justify-center mt-2 mb-8">
         <button
           className=" hover:bg-blue-500 text-white font-semibold focus:outline-none hover:text-white py-2 px-4 border border-white hover:border-transparent rounded"
-          onClick={(e: any) => generateProductData(startDate, endDate)}
+          onClick={(e) => { generateRandomValue(); generateProductData(startDate, endDate) }}
         >Randomize</button>
       </div>
     </div>
